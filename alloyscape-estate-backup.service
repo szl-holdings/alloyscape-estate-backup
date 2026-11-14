@@ -1,0 +1,28 @@
+[Unit]
+Description=AlloyScape encrypted persistent-estate backup and private Git/HF publication
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+WorkingDirectory=/opt/alloyscape/ops/estate-backup
+UMask=0077
+ExecStart=/usr/bin/python3 /opt/alloyscape/ops/estate-backup/controller.py
+ExecStopPost=/usr/bin/python3 /opt/alloyscape/ops/estate-backup/controller.py --exit-note
+Nice=15
+CPUWeight=10
+CPUQuota=200%
+IOWeight=10
+IOSchedulingClass=idle
+MemoryHigh=4G
+MemoryMax=8G
+TimeoutStartSec=22h
+TimeoutStopSec=30s
+KillMode=control-group
+ProtectSystem=full
+PrivateTmp=true
+NoNewPrivileges=true
+LogRateLimitIntervalSec=30s
+LogRateLimitBurst=100

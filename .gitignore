@@ -1,0 +1,6 @@
+*.env
+*password*
+*token*
+RECOVERY.txt
+secrets/
+__pycache__/

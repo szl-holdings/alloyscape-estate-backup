@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily AlloyScape encrypted estate backup at 03:15 UTC
+
+[Timer]
+OnCalendar=*-*-* 03:15:00 UTC
+Persistent=true
+Unit=alloyscape-estate-backup.service
+
+[Install]
+WantedBy=timers.target
