@@ -3,7 +3,7 @@
 from pathlib import Path
 import os,sys,json,subprocess,shlex,time,datetime,hashlib,fcntl,threading,signal,shutil
 os.umask(0o077)
-ROOT=Path('/opt/alloyscape/ops/estate-backup');CONFIG=json.loads((ROOT/'destinations.json').read_text());HOSTS=json.loads((ROOT/'hosts.json').read_text());SOURCE=(ROOT/'source.py').read_text();REPO='sftp:root@100.103.27.39:'+CONFIG['staging_repository'];PASSWORD=CONFIG['HQ_password_file'];CACHE='/var/cache/alloyscape-estate-backup';GIT=ROOT/'control-git';STATUS=ROOT/'LAST-STATUS.json'
+ROOT=Path('/opt/alloyscape/ops/estate-backup');CONFIG=json.loads((ROOT/'destinations.json').read_text());HOSTS=json.loads((ROOT/'hosts.json').read_text());SOURCE=(ROOT/'source.py').read_text();REPO='sftp:root@100.103.27.39:'+CONFIG['staging_repository'];PASSWORD=CONFIG['HQ_password_file'];CACHE='/var/cache/alloyscape-estate-backup';GIT=ROOT/'catalog-git';STATUS=ROOT/'LAST-STATUS.json'
 def now():return datetime.datetime.now(datetime.timezone.utc).isoformat()
 def atomic(path,data):
  path=Path(path);temp=path.with_name(path.name+'.'+str(os.getpid())+'.tmp');temp.write_text(json.dumps(data,indent=2)+'\n');os.chmod(temp,0o600);os.replace(temp,path)
@@ -22,31 +22,48 @@ def storage_guard():
  if d['bytes']>CONFIG['staging_repository_limit_bytes'] or d['free']<40*1024**3:raise RuntimeError('Remote backup storage safety limit reached')
  return d
 def base():return ['/usr/bin/restic','--repo',REPO,'--password-file',PASSWORD,'--cache-dir',CACHE,'--limit-upload','16384','--limit-download','16384','--pack-size','128']
+def capped_drain(stream,path,summaries=None):
+ limit=256*1024;tail_limit=128*1024;written=0;total=0;tail=b''
+ with Path(path).open('wb') as file:
+  while True:
+   chunk=stream.readline() if summaries is not None else stream.read(65536)
+   if not chunk:break
+   total+=len(chunk);tail=(tail+chunk)[-tail_limit:]
+   if written<limit:
+    part=chunk[:limit-written];file.write(part);written+=len(part)
+   if summaries is not None:
+    try:
+     item=json.loads(chunk)
+     if item.get('message_type')=='summary':summaries.append(item)
+    except ValueError:pass
+  if total>limit:
+   file.write(b'\n[progress log capped; final output retained below]\n');file.write(tail)
+  if summaries:
+   file.write(b'\n[parsed final summary]\n');file.write(json.dumps(summaries[-1]).encode())
+ stream.close()
 def execute_backup(state,run,label,host,tail):
- storage_guard();state['current_job']={'host':host,'label':label,'started':now()};atomic(STATUS,state);start=time.monotonic();errpath=run/(host+'-'+label+'.stderr');outpath=run/(host+'-'+label+'.jsonl');summary=None;guard_errors=[];done=threading.Event()
- with errpath.open('wb') as err,outpath.open('wb') as out:
-  child=subprocess.Popen(base()+['backup','--json','--host',host,'--tag','daily-estate','--tag',state['run_id']]+tail,stdout=out,stderr=err,start_new_session=True,env={**os.environ,'GOMAXPROCS':'2'})
-  def watch():
-   while not done.wait(60):
-    try:storage_guard()
-    except Exception as exc:
-     guard_errors.append(str(exc))
-     try:os.killpg(child.pid,signal.SIGTERM)
-     except ProcessLookupError:pass
-     break
-  watcher=threading.Thread(target=watch,daemon=True);watcher.start()
-  try:code=child.wait(timeout=8*3600)
-  except subprocess.TimeoutExpired:
-   guard_errors.append('Bounded backup acquisition time exceeded');os.killpg(child.pid,signal.SIGTERM)
-   try:code=child.wait(timeout=15)
-   except subprocess.TimeoutExpired:os.killpg(child.pid,signal.SIGKILL);code=child.wait()
-  finally:done.set();watcher.join(timeout=25)
- for line in outpath.read_text(errors='replace').splitlines():
-  try:
-   d=json.loads(line)
-   if d.get('message_type')=='summary':summary=d
-  except ValueError:pass
- error=errpath.read_text(errors='replace');warnings=[]
+ storage_guard();state['current_job']={'host':host,'label':label,'started':now()};atomic(STATUS,state);start=time.monotonic();errpath=run/(host+'-'+label+'.stderr');outpath=run/(host+'-'+label+'.jsonl');summaries=[];guard_errors=[];done=threading.Event()
+ child=subprocess.Popen(base()+['backup','--json','--host',host,'--tag','daily-estate','--tag',state['run_id']]+tail,stdout=subprocess.PIPE,stderr=subprocess.PIPE,start_new_session=True,env={**os.environ,'GOMAXPROCS':'2'})
+ readers=[threading.Thread(target=capped_drain,args=(child.stdout,outpath,summaries)),threading.Thread(target=capped_drain,args=(child.stderr,errpath))]
+ for reader in readers:reader.start()
+ def watch():
+  while not done.wait(60):
+   try:storage_guard()
+   except Exception as exc:
+    guard_errors.append(str(exc))
+    try:os.killpg(child.pid,signal.SIGTERM)
+    except ProcessLookupError:pass
+    break
+ watcher=threading.Thread(target=watch,daemon=True);watcher.start()
+ try:code=child.wait(timeout=8*3600)
+ except subprocess.TimeoutExpired:
+  guard_errors.append('Bounded backup acquisition time exceeded');os.killpg(child.pid,signal.SIGTERM)
+  try:code=child.wait(timeout=15)
+  except subprocess.TimeoutExpired:os.killpg(child.pid,signal.SIGKILL);code=child.wait()
+ finally:
+  done.set();watcher.join(timeout=25)
+  for reader in readers:reader.join(timeout=30)
+ summary=summaries[-1] if summaries else None;error=errpath.read_text(errors='replace');warnings=[]
  for marker in ['SOURCE_LIVE_READ_NOT_ATOMIC','SQLITE_BUNDLE_PARTIAL']:
   if marker in error:warnings.append(marker)
  ok=code==0 and summary is not None and not guard_errors
@@ -62,7 +79,7 @@ def github_catalog(state,publication):
  subprocess.run(['/usr/bin/git','-C',str(GIT),'add','--',*paths],check=True,capture_output=True)
  q=subprocess.run(['/usr/bin/git','-C',str(GIT),'diff','--cached','--quiet']);
  if q.returncode:subprocess.run(['/usr/bin/git','-C',str(GIT),'commit','-m','Record verified encrypted backup '+state['run_id']+' '+state['status']],check=True,capture_output=True)
- subprocess.run(['/usr/bin/git','-C',str(GIT),'-c','credential.helper=!gh auth git-credential','push','origin','main'],check=True,capture_output=True,timeout=60)
+ subprocess.run(['/usr/bin/git','-C',str(GIT),'-c','credential.helper=!gh auth git-credential','push','origin','backup-catalog'],check=True,capture_output=True,timeout=60)
  return subprocess.run(['/usr/bin/git','-C',str(GIT),'rev-parse','HEAD'],check=True,capture_output=True,text=True).stdout.strip()
 def publish(state,run):
  state['current_job']={'host':'cpu','label':'publish-encrypted-HF','started':now()};atomic(STATUS,state)
