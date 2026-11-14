@@ -2,11 +2,11 @@
   "run_id": "20261114T101558Z",
   "status": "RUNNING",
   "started": "2026-11-14T10:15:58.529004+00:00",
-  "updated": "2026-11-14T10:19:58.028354+00:00",
+  "updated": "2026-11-14T13:24:32.730789+00:00",
   "hf_dataset": "SZLHOLDINGS/alloyscape-encrypted-estate-backup",
-  "verified_HF_revision": "207d719a659bb02ed42dcd6a6d75b1cad33224f4",
-  "encrypted_bytes": 1613320766,
-  "encrypted_files_verified_present": 48,
+  "verified_HF_revision": "dbb81c5ed8d3b1a70b6bd3c5752aaf0388fe0624",
+  "encrypted_bytes": 150077805024,
+  "encrypted_files_verified_present": 1197,
   "jobs": [
     {
       "host": "hq",
@@ -204,6 +204,34 @@
       "warnings": [
         "SQLITE_BUNDLE_PARTIAL"
       ],
+      "guard_errors": []
+    },
+    {
+      "host": "hq",
+      "label": "persistent-filesystem",
+      "ok": true,
+      "exit": 0,
+      "seconds": 9768.02,
+      "summary": {
+        "message_type": "summary",
+        "files_new": 15682664,
+        "files_changed": 0,
+        "files_unmodified": 0,
+        "dirs_new": 1321155,
+        "dirs_changed": 0,
+        "dirs_unmodified": 0,
+        "data_blobs": 3024064,
+        "tree_blobs": 1173393,
+        "data_added": 216749555869,
+        "data_added_packed": 148275219501,
+        "total_files_processed": 15682664,
+        "total_bytes_processed": 450985802622,
+        "total_duration": 9767.838269728,
+        "backup_start": "2026-11-14T10:20:00.237964948Z",
+        "backup_end": "2026-11-14T13:02:48.076234677Z",
+        "snapshot_id": "78d3103ff4095ab4cda980a69c4ee2ddb3f92e25b04c2048bf7f826e95aa7aa3"
+      },
+      "warnings": [],
       "guard_errors": []
     }
   ],
