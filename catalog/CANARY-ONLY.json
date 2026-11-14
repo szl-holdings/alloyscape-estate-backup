@@ -1,0 +1,14 @@
+{
+  "status": "CANARY_ONLY",
+  "full_estate_backup_completed": false,
+  "restore_proof": {
+    "snapshot_id": "c200d800c380e7aacbc88d20fc1a8a049aaade37886d464d72f6c2bac94c9da6",
+    "HF_dataset": "SZLHOLDINGS/alloyscape-encrypted-estate-backup",
+    "HF_revision": "d27c73157a76489a44683c4585c1cf78f98177ff",
+    "restore_source": "repository freshly downloaded from HF; not original local/SFTP repository",
+    "restored_file": "/tmp/alloyscape-hf-restore-20261114T094319Z/opt/alloyscape/ops/estate-backup/canary/RESTORE-CHECK.txt",
+    "sha256": "863502157a8ebd2d848ae379f78c0af5821624b4a651b17ae5dbed094cd1eb3b",
+    "matches_original": true,
+    "scope": "one canary file only;fullestatebackupnotyetperformed"
+  }
+}
