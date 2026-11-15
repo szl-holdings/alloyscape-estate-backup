@@ -2,11 +2,11 @@
   "run_id": "20261115T060556Z",
   "status": "RUNNING",
   "started": "2026-11-15T06:05:56.564594+00:00",
-  "updated": "2026-11-15T07:19:44.175008+00:00",
+  "updated": "2026-11-15T09:44:34.808321+00:00",
   "hf_dataset": "carlota1/alloyscape-encrypted-estate-backup",
-  "verified_HF_revision": "3955fb778e36c9e5504eedfbd991aaf560867911",
-  "encrypted_bytes": 389260969130,
-  "encrypted_files_verified_present": 3164,
+  "verified_HF_revision": "15c7c8e2a7909b420d5bcf43f73f9f1fc78616b4",
+  "encrypted_bytes": 484439114650,
+  "encrypted_files_verified_present": 3881,
   "jobs": [
     {
       "host": "hq",
@@ -514,6 +514,36 @@
         "snapshot_id": "75d2437926422c0388208e24bcab03a9128e3fbfd49e2c2fc8ef9c6f9428bc17"
       },
       "warnings": [],
+      "guard_errors": []
+    },
+    {
+      "host": "massed",
+      "label": "persistent-filesystem",
+      "ok": true,
+      "exit": 0,
+      "seconds": 7810.35,
+      "summary": {
+        "message_type": "summary",
+        "files_new": 1,
+        "files_changed": 0,
+        "files_unmodified": 0,
+        "dirs_new": 0,
+        "dirs_changed": 2,
+        "dirs_unmodified": 0,
+        "data_blobs": 100558,
+        "tree_blobs": 3,
+        "data_added": 129050278548,
+        "data_added_packed": 95172985845,
+        "total_files_processed": 1,
+        "total_bytes_processed": 274103521280,
+        "total_duration": 7810.182114479,
+        "backup_start": "2026-11-15T07:19:46.484128261Z",
+        "backup_end": "2026-11-15T09:29:56.666242731Z",
+        "snapshot_id": "68663b022bbb61785b076b4d9ab5743bed5f9fb24f9536cb9ecd0b3ac7982a0b"
+      },
+      "warnings": [
+        "SOURCE_LIVE_READ_NOT_ATOMIC"
+      ],
       "guard_errors": []
     }
   ],
