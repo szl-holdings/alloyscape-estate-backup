@@ -1,8 +1,8 @@
 {
   "run_id": "20261115T060556Z",
-  "status": "RUNNING",
+  "status": "PARTIAL",
   "started": "2026-11-15T06:05:56.564594+00:00",
-  "updated": "2026-11-15T10:20:44.933075+00:00",
+  "updated": "2026-11-15T10:23:11.604309+00:00",
   "hf_dataset": "carlota1/alloyscape-encrypted-estate-backup",
   "verified_HF_revision": "7a039146eae98803e3471f4c0312fb420cd34531",
   "encrypted_bytes": 512864025379,
