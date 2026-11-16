@@ -2,11 +2,11 @@
   "run_id": "20261116T031502Z",
   "status": "RUNNING",
   "started": "2026-11-16T03:15:02.342648+00:00",
-  "updated": "2026-11-16T05:40:47.267173+00:00",
+  "updated": "2026-11-16T05:43:23.336891+00:00",
   "hf_dataset": "carlota1/alloyscape-encrypted-estate-backup",
-  "verified_HF_revision": "9a2b83f103a7cc5db07e2d180ac5288f530426f4",
-  "encrypted_bytes": 528338765064,
-  "encrypted_files_verified_present": 4295,
+  "verified_HF_revision": "3b4edb178e9e459d0eae0f776e4acc2bf52fdaa3",
+  "encrypted_bytes": 528338777546,
+  "encrypted_files_verified_present": 4299,
   "jobs": [
     {
       "host": "hq",
@@ -544,6 +544,34 @@
       "warnings": [
         "SOURCE_LIVE_READ_NOT_ATOMIC"
       ],
+      "guard_errors": []
+    },
+    {
+      "host": "cpu",
+      "label": "live-process-and-mount-state",
+      "ok": true,
+      "exit": 0,
+      "seconds": 7.68,
+      "summary": {
+        "message_type": "summary",
+        "files_new": 1,
+        "files_changed": 0,
+        "files_unmodified": 0,
+        "dirs_new": 0,
+        "dirs_changed": 2,
+        "dirs_unmodified": 0,
+        "data_blobs": 1,
+        "tree_blobs": 3,
+        "data_added": 72169,
+        "data_added_packed": 11554,
+        "total_files_processed": 1,
+        "total_bytes_processed": 71276,
+        "total_duration": 7.535161699,
+        "backup_start": "2026-11-16T05:40:50.014869598Z",
+        "backup_end": "2026-11-16T05:40:57.550031307Z",
+        "snapshot_id": "5bc5892017fc930554c2345a98f6ad05a03bce4069eceb174bd9542888519acb"
+      },
+      "warnings": [],
       "guard_errors": []
     }
   ],
