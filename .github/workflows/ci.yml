@@ -22,6 +22,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Byte-compile the backup controller, source, and publisher
-        run: python -m compileall --strict controller.py source.py publish-hf.py
+        run: python -m compileall -q controller.py source.py publish-hf.py
       - name: Parse-only check for the same entry points
         run: python -c "import ast,sys; [ast.parse(open(f,encoding='utf-8').read(),filename=f) for f in ('controller.py','source.py','publish-hf.py')]"
