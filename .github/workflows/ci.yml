@@ -1,0 +1,27 @@
+name: ci
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: estate-backup-ci-${{ github.ref }}
+  cancel-in-progress: false
+  queue: max
+jobs:
+  byte-compile:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Byte-compile the backup controller, source, and publisher
+        run: python -m compileall --strict controller.py source.py publish-hf.py
+      - name: Parse-only check for the same entry points
+        run: python -c "import ast,sys; [ast.parse(open(f,encoding='utf-8').read(),filename=f) for f in ('controller.py','source.py','publish-hf.py')]"
